@@ -1,2 +1,27 @@
 server:
   port: 7777
+
+spring:
+  datasource:
+    driver-class-name: software.amazon.jdbc.Driver
+    url: jdbc:aws-wrapper:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    hikari:
+      jdbc-url: ${spring.datasource.url}
+      data-source-properties:
+        wrapperPlugins: dev,efm2,readWriteSplitting # iam,failover,readWriteSplitting...
+        wrapperLoggerLevel: finest # FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE
+        awsProfile: default
+        user: ${spring.datasource.username}
+        password: ${spring.datasource.password}
+      exception-override-class-name: software.amazon.jdbc.util.HikariCPSQLException
+      maximum-pool-size: 50
+      auto-commit: false
+
+  docker:
+    compose:
+      enabled: false
+
+logging.level:
+  'software.amazon.jdbc': info # for trace
