@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.5.4")
+    implementation("com.google.code.gson:gson")
     runtimeOnly("org.postgresql:postgresql")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
