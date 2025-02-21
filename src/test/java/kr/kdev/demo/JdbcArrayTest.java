@@ -1,6 +1,7 @@
 package kr.kdev.demo;
 
 import com.google.gson.Gson;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -12,10 +13,9 @@ import org.springframework.jdbc.core.RowMapper;
 import software.amazon.jdbc.wrapper.ArrayWrapper;
 
 import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +76,7 @@ class JdbcArrayTest {
     @Test
     @DisplayName("JSON Array using RowMapper")
     void selectJsonArray_usingRowMapper() {
-        String[] strings = jdbcTemplate.queryForObject("select '[0,1,2]'::jsonb", new RowMapper<String[]>() {
+        String[] strings = jdbcTemplate.queryForObject("SELECT '[0,1,2]'::jsonb", new RowMapper<String[]>() {
             @Override
             public String[] mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Array array = rs.getArray(1);
@@ -86,5 +86,49 @@ class JdbcArrayTest {
         });
         assertNotNull(strings);
         assertEquals(3, strings.length);
+    }
+
+    @Test
+    @DisplayName("2D Array using RowMapper")
+    void select2DArray_usingRowMapper() {
+        String[][] strings = jdbcTemplate.queryForObject("SELECT '{{a,b,c},{d,e,f}}'::varchar[][]", new RowMapper<String[][]>() {
+            @Override
+            public String[][] mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Array array = rs.getArray(1);
+                Assertions.assertEquals(ArrayWrapper.class, array.getClass());
+                return (String[][]) array.getArray();
+            }
+        });
+        assertNotNull(strings);
+        assertEquals(2, strings.length);
+    }
+
+    @Data
+    public static class Product {
+        private Long id;
+        private String name;
+        private BigDecimal price;
+    }
+
+    @Data
+    public static class Products {
+        private OffsetDateTime timestamp;
+        private List<Product> products;
+    }
+
+    @Test
+    @DisplayName("Jsonb Array using RowMapper")
+    void selectJsonbAgg_usingRowMapper() {
+        Products products = jdbcTemplate.queryForObject("""
+                    SELECT
+                      NOW() AS timestamp,
+                      JSONB_AGG(
+                        JSONB_BUILD_OBJECT('id', id, 'name', name, 'price', price)
+                      ) AS products
+                    FROM
+                      products;
+                """, CustomMapper.newInstance(Products.class));
+        assertNotNull(products);
+        assertEquals(3, products.getProducts().size());
     }
 }
