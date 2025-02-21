@@ -14,7 +14,10 @@ import software.amazon.jdbc.wrapper.ArrayWrapper;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Array;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -131,4 +134,19 @@ class JdbcArrayTest {
         assertNotNull(products);
         assertEquals(3, products.getProducts().size());
     }
+
+    @DisplayName("2DLongArray using ArrayWrapper")
+    @Test
+    void select2DLongArray_usingRowMapper() {
+        Array array = jdbcTemplate.queryForObject("SELECT ARRAY [[1,2,3],[4,5,6]]::BIGINT[][]", Array.class);
+        assertNotNull(array);
+
+        assertDoesNotThrow(() -> {
+            Long[][] arrays = (Long[][]) array.getArray(); // {{1,2,3},{4,5,6}}
+            assertNotNull(arrays);
+            assertEquals(2, arrays.length);
+            assertEquals(3, arrays[0].length);
+        });
+    }
+
 }
