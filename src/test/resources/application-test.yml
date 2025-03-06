@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    hikari:
+      data-source-properties:
+        wrapperPlugins: executionTime,logQuery
+        wrapperLogUnclosedConnections: true
+        tcpKeepAlive: true
+      max-lifetime: 600000
+      keepalive-time: 300000
+
+logging.level:
+  'com.zaxxer.hikari.HikariConfig': trace
+  'software.amazon.jdbc.hostlistprovider.RdsHostListProvider': trace
+  'software.amazon.jdbc.plugin.DefaultConnectionPlugin': trace
+  'software.amazon.jdbc.plugin.iam.IamAuthConnectionPlugin': trace

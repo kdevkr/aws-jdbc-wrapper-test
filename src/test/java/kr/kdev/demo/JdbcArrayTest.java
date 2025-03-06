@@ -1,6 +1,7 @@
 package kr.kdev.demo;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.test.context.ActiveProfiles;
 import software.amazon.jdbc.wrapper.ArrayWrapper;
 
 import javax.sql.DataSource;
@@ -26,7 +28,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-@SpringBootTest
+@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class JdbcArrayTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -138,6 +141,7 @@ class JdbcArrayTest {
     @DisplayName("2DLongArray using ArrayWrapper")
     @Test
     void select2DLongArray_usingRowMapper() {
+        ArrayWrapper pgArray = jdbcTemplate.queryForObject("SELECT '{}'::BIGINT[]", ArrayWrapper.class);
         Array array = jdbcTemplate.queryForObject("SELECT ARRAY [[1,2,3],[4,5,6]]::BIGINT[][]", Array.class);
         assertNotNull(array);
 
@@ -147,6 +151,8 @@ class JdbcArrayTest {
             assertEquals(2, arrays.length);
             assertEquals(3, arrays[0].length);
         });
+
+        assertThrows(JsonSyntaxException.class, () -> new Gson().fromJson("{{1,2,3},{4,5,6}}", Long[][].class));
     }
 
 }
